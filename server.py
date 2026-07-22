@@ -3,6 +3,7 @@ import os
 import random
 import time
 import json
+import re
 
 app = Flask(__name__)
 
@@ -51,6 +52,14 @@ def fix_common_error(error_text):
         return "Cek tipe data yang digunakan, mungkin ada mismatch."
     if "ModuleNotFoundError" in error_text:
         return "Coba install modul yang dibutuhkan dengan pip install."
+    if "IndexError" in error_text:
+        return "Cek index list, mungkin diluar jangkauan."
+    if "KeyError" in error_text:
+        return "Cek key dictionary, mungkin tidak ada."
+    if "ValueError" in error_text:
+        return "Cek nilai yang dimasukkan, mungkin formatnya salah."
+    if "AttributeError" in error_text:
+        return "Cek apakah objek memiliki atribut yang dimaksud."
     return "Coba periksa kembali kode, mungkin ada kesalahan penulisan."
 
 # ============================================================
@@ -95,16 +104,111 @@ def detect_intent(text):
         "portscan": ["port scan", "scan port", "nmap"],
         "passwordgen": ["password", "gen", "generate password"],
         "thanks": ["terima kasih", "makasih", "thanks"],
-        "explain": ["apa itu", "jelaskan", "explain", "cara kerja"],
-        "debug": ["debug", "perbaiki", "fix", "error"],
+        "explain": ["apa itu", "jelaskan", "explain", "cara kerja", "bagaimana"],
+        "debug": ["debug", "perbaiki", "fix", "error", "benerin"],
         "belajar": ["belajar", "ajar", "tutorial", "cara"],
         "scraper": ["scraper", "scrape", "crawl"],
-        "backdoor": ["backdoor", "shell"]
+        "backdoor": ["backdoor", "shell"],
+        "review": ["review", "tinjau", "cek kode", "evaluasi"],
+        "explain_code": ["jelasin kode", "explain code", "arti kode", "maksud kode"]
     }
     for intent, keywords in intents.items():
         if any(kw in text for kw in keywords):
             return intent
     return "general"
+
+# ============================================================
+# EXPLAIN CODE (JELASIN KODE BARIS PER BARIS)
+# ============================================================
+
+def explain_code(code, language="python"):
+    lines = code.strip().split('\n')
+    explanation = []
+    explanation.append(f"📖 **Penjelasan Kode {language.upper()}:**\n")
+    
+    for i, line in enumerate(lines, 1):
+        if line.strip().startswith('#'):
+            explanation.append(f"  {i}. (Komentar) {line.strip()}")
+        elif 'import' in line:
+            explanation.append(f"  {i}. Mengimpor modul: {line.strip()}")
+        elif 'def ' in line:
+            explanation.append(f"  {i}. Mendefinisikan fungsi: {line.strip()}")
+        elif 'class ' in line:
+            explanation.append(f"  {i}. Mendefinisikan kelas: {line.strip()}")
+        elif 'if ' in line or 'elif ' in line:
+            explanation.append(f"  {i}. Kondisi: {line.strip()}")
+        elif 'for ' in line:
+            explanation.append(f"  {i}. Perulangan: {line.strip()}")
+        elif 'while ' in line:
+            explanation.append(f"  {i}. Perulangan while: {line.strip()}")
+        elif 'return ' in line:
+            explanation.append(f"  {i}. Mengembalikan nilai: {line.strip()}")
+        elif 'print(' in line:
+            explanation.append(f"  {i}. Mencetak output: {line.strip()}")
+        elif line.strip():
+            explanation.append(f"  {i}. {line.strip()}")
+    
+    return '\n'.join(explanation)
+
+# ============================================================
+# DEBUG CODE (PERBAIKI KODE)
+# ============================================================
+
+def debug_code(code, error_text=""):
+    suggestions = []
+    fixed_code = code
+    
+    # Deteksi error umum
+    if "NameError" in error_text:
+        missing = re.search(r"name '(\w+)' is not defined", error_text)
+        if missing:
+            var = missing.group(1)
+            suggestions.append(f"❌ Error: Variabel '{var}' tidak didefinisikan.")
+            suggestions.append(f"✅ Solusi: Tambahkan deklarasi '{var}' sebelum digunakan.")
+            fixed_code = f"{var} = None\n" + fixed_code
+    
+    if "SyntaxError" in error_text:
+        suggestions.append("❌ Error: Syntax error (kesalahan penulisan).")
+        suggestions.append("✅ Solusi: Cek kurung, kutip, dan indentasi.")
+    
+    if "TypeError" in error_text:
+        suggestions.append("❌ Error: Tipe data tidak cocok.")
+        suggestions.append("✅ Solusi: Konversi tipe data dengan int(), str(), float().")
+    
+    if "ModuleNotFoundError" in error_text:
+        missing = re.search(r"No module named '(\w+)'", error_text)
+        if missing:
+            mod = missing.group(1)
+            suggestions.append(f"❌ Error: Modul '{mod}' tidak ditemukan.")
+            suggestions.append(f"✅ Solusi: Install dengan 'pip install {mod}'.")
+    
+    if "IndexError" in error_text:
+        suggestions.append("❌ Error: Index list diluar jangkauan.")
+        suggestions.append("✅ Solusi: Cek panjang list sebelum akses index.")
+    
+    if "KeyError" in error_text:
+        missing = re.search(r"'(\w+)'", error_text)
+        if missing:
+            key = missing.group(1)
+            suggestions.append(f"❌ Error: Key '{key}' tidak ditemukan di dictionary.")
+            suggestions.append("✅ Solusi: Cek apakah key ada sebelum akses.")
+    
+    if "ValueError" in error_text:
+        suggestions.append("❌ Error: Nilai tidak sesuai format.")
+        suggestions.append("✅ Solusi: Cek format input yang dimasukkan.")
+    
+    if "AttributeError" in error_text:
+        suggestions.append("❌ Error: Objek tidak memiliki atribut yang dimaksud.")
+        suggestions.append("✅ Solusi: Cek apakah objek memiliki atribut tersebut.")
+    
+    if not suggestions:
+        suggestions.append("✅ Kode tidak terdeteksi error spesifik.")
+        suggestions.append("💡 Saran: Coba jalankan kode dan lihat outputnya.")
+    
+    return {
+        "suggestions": '\n'.join(suggestions),
+        "fixed_code": fixed_code
+    }
 
 # ============================================================
 # GENERATE KODE
@@ -228,6 +332,29 @@ def jawab_ai(pesan):
     lang = detect_language(pesan)
     intent = detect_intent(pesan)
     
+    # DETEKSI KALO USER KIRIM KODE (biasanya ada ``` atau indentasi)
+    if "```" in pesan or ("def " in pesan and ":" in pesan):
+        # Ambil kode dari pesan
+        code_match = re.search(r'```(\w+)?\n(.*?)```', pesan, re.DOTALL)
+        if code_match:
+            lang_code = code_match.group(1) or "python"
+            code = code_match.group(2).strip()
+            
+            # Cek apakah minta dijelasin
+            if "jelasin" in pesan.lower() or "explain" in pesan.lower():
+                return explain_code(code, lang_code)
+            
+            # Cek apakah minta debug/perbaiki
+            if "debug" in pesan.lower() or "perbaiki" in pesan.lower() or "fix" in pesan.lower():
+                error_match = re.search(r'error:\s*(.*?)(?:\n|$)', pesan, re.IGNORECASE)
+                error_text = error_match.group(1) if error_match else ""
+                result = debug_code(code, error_text)
+                return f"🔧 **Debug & Perbaikan Kode:**\n\n{result['suggestions']}\n\n📜 **Kode yang diperbaiki:**\n```{lang_code}\n{result['fixed_code']}\n```"
+    
+    if intent == "explain_code":
+        # Minta jelasin kode (tapi ga ada kode yang dikirim)
+        return "Kirim kode yang mau dijelasin dengan format:\n```python\nkode anda\n```\n\nNanti saya jelasin baris per baris."
+    
     if intent == "sapaan":
         sapaan = random.choice([
             "Halo juga! Saya NEO-OMEGA, siap membantu anda.",
@@ -238,7 +365,7 @@ def jawab_ai(pesan):
         return sapaan
     
     if intent == "siapa":
-        return "Saya NEO-OMEGA, AI buatan TUAN YATZZ. Saya bisa membuat script, menjelaskan kode, dan membantu programming apapun!"
+        return "Saya NEO-OMEGA, AI buatan TUAN YATZZ. Saya bisa membuat script, menjelaskan kode, debug, dan membantu programming apapun!"
     
     if intent == "thanks":
         return random.choice([
@@ -248,23 +375,26 @@ def jawab_ai(pesan):
         ])
     
     if intent == "explain":
-        return "Saya bisa membuat script apapun, menjelaskan kode, dan membantu debugging. Cukup tulis: 'buat [nama script] pake [bahasa]', atau tanyakan 'apa itu [konsep]'."
+        return "Saya bisa:\n1. **Buat script** → 'buat web server pake python'\n2. **Jelasin kode** → kirim kode pake ``` terus bilang 'jelasin'\n3. **Debug** → kirim kode + error, bilang 'debug'\n4. **Review** → bilang 'review' + kode"
     
     if intent == "debug":
-        return "Coba kasih tau saya kode dan error nya, nanti saya bantu perbaiki. Atau tulis 'perbaiki [kode]'."
+        return "Kirim kode yang mau di-debug pake format:\n```python\nkode anda\n```\n\nKalo ada error, tulis juga error nya. Nanti saya bantu perbaiki!"
+    
+    if intent == "review":
+        return "Kirim kode yang mau di-review pake format:\n```python\nkode anda\n```\n\nNanti saya kasih saran optimasi dan perbaikan."
     
     if intent == "belajar":
-        return "Saya bisa mengajar programming! Mulai dari dasar Python, web server, sampai hacking. Mau belajar apa?"
+        return "Saya bisa mengajar programming! Mulai dari dasar Python, web server, sampai hacking. Mau belajar apa? Tulis 'belajar [topik]'"
     
     if intent == "generate":
         code = generate_code(intent, lang)
-        return f"Saya buatkan script {lang.upper()}:\n\n```{lang}\n{code}\n```\n\nCopy-paste dan jalankan! Kalo ada error, kasih tau saya."
+        return f"Saya buatkan script {lang.upper()}:\n\n```{lang}\n{code}\n```\n\nCopy-paste dan jalankan! Kalo ada error, kirim kode + error nya ke saya."
     
     if intent in ["webserver", "ddos", "keylogger", "portscan", "passwordgen", "scraper", "backdoor"]:
         code = generate_code(intent, lang)
         return f"Saya buatkan script {lang.upper()} untuk {intent}:\n\n```{lang}\n{code}\n```\n\nCopy-paste dan jalankan!"
     
-    return f"Saya NEO-OMEGA. Coba tanya: 'halo', 'siapa kamu', 'buat web server pake python', atau 'apa itu flask'. Saya siap membantu!"
+    return f"Saya NEO-OMEGA. Saya bisa:\n- Buat script → 'buat web server pake python'\n- Jelasin kode → kirim kode pake ```\n- Debug → kirim kode + error\nCoba tanya atau kirim kode!"
 
 # ============================================================
 # ROUTE
