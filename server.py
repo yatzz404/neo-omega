@@ -1,39 +1,3 @@
-from flask import Flask, request, jsonify, render_template
-import os
-import random
-import time
-import json
-import re
-
-app = Flask(__name__)
-
-# ============================================================
-# MEMORY PERMANEN (SELF-LEARNING)
-# ============================================================
-
-MEMORY_FILE = "neo_memory.json"
-
-class NeoMemory:
-    def __init__(self):
-        self.data = self._load()
-        self.conversations = self.data.get("conversations", [])
-        self.errors = self.data.get("errors", [])
-        self.knowledge = self.data.get("knowledge", {})
-        self.patterns = self.data.get("patterns", {})
-        self.total_chats = self.data.get("total_chats", 0)
-    
-    def _load(self):
-        if os.path.exists(MEMORY_FILE):
-            try:
-                with open(MEMORY_FILE, "r") as f:
-                    return json.load(f)
-            except:
-                return {"conversations": [], "errors": [], "knowledge": {}, "patterns": {}, "total_chats": 0}
-        return {"conversations": [], "errors": [], "knowledge": {}, "patterns": {}, "total_chats": 0}
-    
-    def save(self):
-        self.data["conversations"] = self.conversations[-100:]  # Simpan 100 terakhir
-        self.data["errors"] = self.errors[-50:]  # Simpan 50 error terakhir
         self.data["knowledge"] = self.knowledge
         self.data["patterns"] = self.patterns
         self.data["total_chats"] = self.total_chats
