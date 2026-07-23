@@ -1,32 +1,57 @@
-import sys
-import os
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    try:
+        data = request.get_json()
+        if not data or 'message' not in data:
+            return jsonify({'response': '⚠️ Invalid request'}), 400
 
-# Tambahkan root directory ke path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        user_message = data['message'].strip()
+        if not user_message:
+            return jsonify({'response': '⚠️ Message cannot be empty'}), 400
 
-try:
-    from app import app as application
-    print("✅ App imported successfully!")
-except Exception as e:
-    print(f"❌ Error importing app: {e}")
-    # Fallback app
-    from flask import Flask, jsonify
-    application = Flask(__name__)
+        # === RESPONSE SEDERHANA ===
+        msg = user_message.lower()
+        
+        if 'help' in msg or 'bantuan' in msg:
+            response = """📋 **Menu NEO-OMEGA by YATZZ:**
+• `halo` - Sapaan
+• `nama kamu` - Nama AI
+• `waktu` - Jam sekarang
+• `tanggal` - Tanggal sekarang
+• `2+2` - Hitung matematika
+• `help` - Menu ini"""
+        
+        elif 'nama' in msg or 'siapa' in msg:
+            response = "🤖 Saya **NEO-OMEGA** by **YATZZ**!"
+        
+        elif 'halo' in msg or 'hai' in msg or 'hey' in msg:
+            response = "Halo juga! Ada yang bisa dibantu? 👋"
+        
+        elif 'waktu' in msg or 'jam' in msg:
+            from datetime import datetime
+            response = f"🕐 Sekarang: {datetime.now().strftime('%H:%M:%S')}"
+        
+        elif 'tanggal' in msg or 'date' in msg:
+            from datetime import datetime
+            response = f"📅 Tanggal: {datetime.now().strftime('%d %B %Y')}"
+        
+        elif any(op in msg for op in ['+', '-', '*', '/']):
+            try:
+                # Hanya angka dan operator
+                import re
+                if re.match(r'^[\d+\-*/.() ]+$', msg):
+                    result = eval(msg)
+                    response = f"📝 Hasil: **{result}**"
+                else:
+                    response = "⚠️ Hanya operasi matematika dasar"
+            except:
+                response = "⚠️ Gagal menghitung"
+        
+        else:
+            response = f"📝 Pesan: '{user_message}'\n\nKetik **help** untuk menu lengkap!"
+        
+        return jsonify({'response': response})
     
-    @application.route('/')
-    def index():
-        return jsonify({
-            'status': 'error',
-            'message': 'Failed to load main app',
-            'error': str(e)
-        })
-    
-    @application.route('/api/health')
-    def health():
-        return jsonify({
-            'status': 'degraded',
-            'error': str(e)
-        })
-
-# Vercel membutuhkan 'app'
-app = application
+    except Exception as e:
+        print(f"Error: {e}")  # Ini akan muncul di logs
+        return jsonify({'response': f'⚠️ Error: {str(e)}'}), 500
