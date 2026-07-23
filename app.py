@@ -1,35 +1,48 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import os
-import json
+import sys
 import logging
 from datetime import datetime
-from ai_handler import AIHandler
 
-app = Flask(__name__, template_folder='templates')
-CORS(app)
-
-# Configure logging
+# Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize AI Handler
-ai_handler = AIHandler()
+# Inisialisasi Flask
+app = Flask(__name__, template_folder='templates')
+CORS(app)
+
+# Import AI Handler dengan error handling
+try:
+    from ai_handler import AIHandler
+    ai_handler = AIHandler()
+    logger.info("✅ AI Handler loaded successfully!")
+except Exception as e:
+    logger.error(f"❌ Failed to load AI Handler: {e}")
+    ai_handler = None
 
 @app.route('/')
 def index():
-    """Serve the HTML chat interface"""
-    return render_template('chat.html')
+    try:
+        return render_template('chat.html')
+    except Exception as e:
+        return f"Error loading chat.html: {e}"
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    """Main chat endpoint"""
     try:
+        if ai_handler is None:
+            return jsonify({
+                'response': '⚠️ AI Handler not loaded. Please check logs.',
+                'error': 'AI Handler not initialized'
+            }), 500
+
         data = request.get_json()
         if not data or 'message' not in data:
             return jsonify({
-                'response': '⚠️ Invalid request format',
-                'error': 'Missing message field'
+                'response': '⚠️ Invalid request',
+                'error': 'Missing message'
             }), 400
 
         user_message = data['message'].strip()
@@ -41,8 +54,6 @@ def chat():
 
         logger.info(f"Processing: {user_message[:50]}...")
         result = ai_handler.process_message(user_message)
-        logger.info(f"Response: {result.get('response', '')[:50]}...")
-
         return jsonify(result)
 
     except Exception as e:
@@ -54,9 +65,8 @@ def chat():
 
 @app.route('/api/health', methods=['GET'])
 def health():
-    """Health check endpoint"""
     return jsonify({
-        'status': 'online',
+        'status': 'online' if ai_handler else 'degraded',
         'timestamp': datetime.now().isoformat(),
         'version': 'v∞ OMNIBREAKER',
         'ai_loaded': ai_handler is not None
