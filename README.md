@@ -1,26 +1,25 @@
-# NEO-OMEGA v∞ — OMNIBREAKER AI 🤖
+# 🤖 NEO-OMEGA v∞ OMNIBREAKER AI
 
-Advanced AI assistant with code generation, system operations, and more.
+Advanced AI assistant with code generation, system operations, and more!
 
 ## ✨ Features
 
-- 💻 **Code Generation** - Python, JavaScript, PHP, Ruby, Go, SQL, HTML, CSS
-- 🛠️ **System Commands** - Safe system info (ls, pwd, whoami, hostname)
-- 📁 **File Operations** - List, read, and create files
+- 💻 **Code Generation** - 10+ programming languages
+- 🛠️ **System Commands** - Safe system info
+- 📁 **File Operations** - List, read, create files
 - 🧮 **Math Operations** - Complex calculations
-- 🌐 **Web Operations** - Fetch and scrape web content
-- 📅 **Date & Time** - Current time, date, and calendar
+- 🌐 **Web Operations** - Fetch and scrape
+- 🔐 **Encryption** - Hash, encrypt, decrypt
+- 🗄️ **Database** - SQLite operations
+- 🎮 **Games** - Simple games
+- 📅 **Date/Time** - Calendar, countdown
 
 ## 🚀 Deployment
 
-### Deploy to Vercel
-
-1. Push to GitHub
-2. Import to Vercel
-3. Deploy!
-
-### Local Development
-
 ```bash
+# Local
 pip install -r requirements.txt
 python app.py
+
+# Vercel
+vercel
