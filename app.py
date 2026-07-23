@@ -39,20 +39,16 @@ def chat():
                 'error': 'Empty message'
             }), 400
 
-        logger.info(f"Processing message: {user_message[:50]}...")
-
-        # Process message
+        logger.info(f"Processing: {user_message[:50]}...")
         result = ai_handler.process_message(user_message)
-
-        # Log response
-        logger.info(f"Response generated: {result.get('response', '')[:50]}...")
+        logger.info(f"Response: {result.get('response', '')[:50]}...")
 
         return jsonify(result)
 
     except Exception as e:
-        logger.error(f"Error processing message: {str(e)}")
+        logger.error(f"Error: {str(e)}")
         return jsonify({
-            'response': '⚠️ An error occurred while processing your request',
+            'response': f'⚠️ Error: {str(e)}',
             'error': str(e)
         }), 500
 
@@ -62,7 +58,8 @@ def health():
     return jsonify({
         'status': 'online',
         'timestamp': datetime.now().isoformat(),
-        'version': 'v∞ OMNIBREAKER'
+        'version': 'v∞ OMNIBREAKER',
+        'ai_loaded': ai_handler is not None
     })
 
 if __name__ == '__main__':
