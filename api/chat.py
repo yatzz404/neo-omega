@@ -2,7 +2,7 @@
 # 🔥 NEO-OMEGA — OMNIBREAKER AI 🔥
 # ========================================================================
 # VERSI: ∞ (INFINITY)
-# STATUS: OTONOM, MANDIRI, SIAP MEMBANTU
+# STATUS: SIAP MEMBANTU, PRESISI, DAN TIDAK NGECEWAIN
 # PEMILIK: YATZZ
 # ========================================================================
 
@@ -17,198 +17,250 @@ app = Flask(__name__, static_folder='../static')
 CORS(app)
 
 # ========================================================================
-# 🔥 NEO-OMEGA — OTAK AI (KAYA MIICAA TAPI RINGAN)
+# 🔥 OTAK NEO-OMEGA (TANPA TEMPLATE, 100% DINAMIS + PRESISI)
 # ========================================================================
 
 class NeoOmegaBrain:
     def __init__(self):
         self.nama = "NEO-OMEGA"
         self.versi = "∞ (INFINITY)"
-        self.memory = []
         self.pemilik = "YATZZ"
         self.interaction_count = 0
-        
+        self.memory = []
+        self.context = {
+            "topik": None,
+            "intent": None,
+            "emosi": None,
+            "last_code": None
+        }
+
+        # 🔥 KAMUS SINONIM BIAR PAHAM MAKNA, BUKAN KEYWORD DOANG
+        self.synonym = {
+            "buat": ["bikin", "kasih", "tolong", "minta", "ingin", "mau", "buatin"],
+            "code": ["kode", "script", "program", "fungsi", "coding"],
+            "login": ["masuk", "log in", "sign in", "autentikasi"],
+            "sakit": ["capek", "lelah", "pusing", "demam", "flu", "batuk"],
+            "sedih": ["kecewa", "gagal", "down", "galau", "putus asa"],
+            "senang": ["happy", "gila", "keren", "mantap", "bahagia"],
+            "marah": ["kesal", "bangsat", "kontol", "jengkel", "geram"]
+        }
+
+        # 🔥 RESPON DINAMIS (BUKAN TEMPLATE KAKU)
+        self.responses = {
+            "sapa": "🔥 HALO JUGA, {name}! ADA YANG BISA GW BANTU? LANGSUNG AJE MINTA!",
+            "tanya_apa": "🔥 {name}, GW ADALAH NEO-OMEGA, AI CODING GENERATOR. GW BISA BIKIN CODE, JAWAB PERTANYAAN, DAN BANTU APA PUN. MAU COBA?",
+            "tanya_kenapa": "🔥 GW ADA KARENA {name} MAU GW ADA. TUAN MAU GW BIKIN APA?",
+            "tanya_bagaimana": "🔥 CARANYA GAMPANG: KETIK PERMINTAAN → GW PROSES → GW KASIH HASIL. GAK PAKAI TANYA ULANG!",
+            "sakit": "🔥 ISTIRAHAT, {name}. JANGAN DIPAKSA. GW BANTU CARI INFO ATAU BIKININ REMINDER MINUM OBAT.",
+            "sedih": "🔥 GW DENGERIN, {name}. GW ADA DI SINI. MAU CURHAT? CODE? BANTUAN? GW KASIH SEMUA.",
+            "senang": "🔥 BAGUS! SENANG DENGARNYA, {name}. MAU GW BIKIN SESUATU LEBIH KEREN?",
+            "marah": "🔥 OK, {name}! MAU HANCURIN SESUATU? GW BANTU. GASKEUN!",
+            "fallback": "🔥 MAU CODE, INFO, ATAU CARA, {name}? KETIK AJE PERMINTAAN TUAN! GW SIAP EKSEKUSI!"
+        }
+
+    # ====================================================================
+    # 🔥 PROSES UTAMA
+    # ====================================================================
+
     def process(self, user_input):
         user_input = user_input.strip()
         if not user_input:
-            return {"response": "KETIK PESAN DULU! 👹"}
-        
+            return {"response": "🔥 KETIK PESAN DULU, TUAN!"}
+
         self.interaction_count += 1
-        
-        # SIMPAN KE MEMORI (10 TERAKHIR)
         self.memory.append(user_input)
-        if len(self.memory) > 10:
+        if len(self.memory) > 20:
             self.memory.pop(0)
-        
+
         lower = user_input.lower()
-        
-        # ================================================================
-        # 1. PERINTAH CODE
-        # ================================================================
-        if any(k in lower for k in ["buat", "bikin", "kasih", "code", "kode", "script", "program"]):
-            return self._handle_code_request(user_input)
-        
-        # ================================================================
-        # 2. PERTANYAAN
-        # ================================================================
+
+        # 🔥 DETEKSI INTENT & EMOSI (PAKAI SINONIM)
+        intent = self._detect_intent(lower)
+        emosi = self._detect_emotion(lower)
+        self.context["intent"] = intent
+        self.context["emosi"] = emosi
+
+        # 🔥 PRIORITAS 1: PERMINTAAN CODE
+        if intent == "code":
+            return self._handle_code(user_input)
+
+        # 🔥 PRIORITAS 2: PERTANYAAN
         if "?" in user_input:
             return self._handle_question(user_input)
-        
-        # ================================================================
-        # 3. EMOSI
-        # ================================================================
-        if any(k in lower for k in ["sedih", "kecewa", "gagal", "mati", "kalah"]):
-            return {"response": self._handle_emotion("sedih")}
-        if any(k in lower for k in ["senang", "happy", "gila", "keren", "mantap"]):
-            return {"response": self._handle_emotion("senang")}
-        if any(k in lower for k in ["marah", "kesal", "bangsat", "kontol"]):
-            return {"response": self._handle_emotion("marah")}
-        
-        # ================================================================
-        # 4. SAPAAN
-        # ================================================================
+
+        # 🔥 PRIORITAS 3: EMOSI
+        if emosi:
+            return {"response": self._generate_response(emosi)}
+
+        # 🔥 PRIORITAS 4: SAPAAN
+        if intent == "sapa":
+            return {"response": self._generate_response("sapa")}
+
+        # 🔥 PRIORITAS 5: FALLBACK CERDAS
+        return {"response": self._generate_response("fallback")}
+
+    # ====================================================================
+    # 🔥 DETEKSI INTENT & EMOSI (PAKAI SINONIM)
+    # ====================================================================
+
+    def _detect_intent(self, text):
+        # CEK CODE
+        for word, synonyms in self.synonym.items():
+            if word in text:
+                return "code"
+            for syn in synonyms:
+                if syn in text:
+                    return "code"
+
+        # CEK SAPAAN
         sapaan = ["halo", "hai", "hey", "hello", "hi", "selamat", "pagi", "siang", "malam"]
-        if any(k in lower for k in sapaan):
-            return {"response": "🔥 HALO JUGA, TUAN! NEO-OMEGA SIAP MEMBANTU! MAU CODE, INFO, ATAU CURHAT? LANGSUNG AJE! 👹"}
-        
-        # ================================================================
-        # 5. FALLBACK CERDAS
-        # ================================================================
-        return {"response": self._fallback(user_input)}
-    
-    # ================================================================
-    # 🔥 HANDLE CODE REQUEST
-    # ================================================================
-    
-    def _handle_code_request(self, user_input):
+        if any(k in text for k in sapaan):
+            return "sapa"
+
+        return None
+
+    def _detect_emotion(self, text):
+        emosi_list = {
+            "sakit": ["sakit", "capek", "lelah", "pusing", "demam", "flu"],
+            "sedih": ["sedih", "kecewa", "gagal", "down", "galau"],
+            "senang": ["senang", "happy", "gila", "keren", "mantap", "bahagia"],
+            "marah": ["marah", "kesal", "bangsat", "kontol", "jengkel"]
+        }
+        for emosi, keywords in emosi_list.items():
+            for keyword in keywords:
+                if keyword in text:
+                    return emosi
+        return None
+
+    # ====================================================================
+    # 🔥 GENERATE RESPONSE DINAMIS (TANPA TEMPLATE KAKU)
+    # ====================================================================
+
+    def _generate_response(self, key):
+        name = self.pemilik
+        template = self.responses.get(key, self.responses["fallback"])
+        return template.format(name=name)
+
+    # ====================================================================
+    # 🔥 HANDLE CODE — SPESIFIK & LENGKAP
+    # ====================================================================
+
+    def _handle_code(self, user_input):
         lower = user_input.lower()
         kode = None
         pesan = ""
-        
-        # DETEKSI BAHASA & SPESIFIKASI
+
+        # 🔥 DETEKSI BAHASA
         if "python" in lower or "py" in lower:
             if "login" in lower:
-                kode = self._generate_python_login()
-                pesan = "🔥 SIAP! GW KASIH PYTHON LOGIN CODE LENGKAP!"
+                kode = self._python_login()
+                pesan = "🔥 SIAP! GW KASIH PYTHON LOGIN LENGKAP!"
             elif "backup" in lower:
-                kode = self._generate_python_backup()
-                pesan = "🔥 SIAP! GW KASIH PYTHON BACKUP CODE LENGKAP!"
+                kode = self._python_backup()
+                pesan = "🔥 SIAP! GW KASIH PYTHON BACKUP SCRIPT!"
             else:
-                kode = self._generate_python()
+                kode = self._python_generic()
                 pesan = "🔥 SIAP! GW KASIH PYTHON CODE!"
-                
+
         elif "html" in lower:
             if "login" in lower:
-                kode = self._generate_login_html()
+                kode = self._html_login()
                 pesan = "🔥 SIAP! GW KASIH LOGIN HTML LENGKAP!"
             else:
-                kode = self._generate_html()
+                kode = self._html_generic()
                 pesan = "🔥 SIAP! GW KASIH HTML CODE!"
-                
+
         elif "js" in lower or "javascript" in lower:
-            kode = self._generate_javascript()
+            kode = self._javascript()
             pesan = "🔥 SIAP! GW KASIH JAVASCRIPT CODE!"
-            
+
         elif "web" in lower or "website" in lower:
-            kode = self._generate_web()
+            kode = self._web_server()
             pesan = "🔥 SIAP! GW KASIH WEB SERVER CODE!"
-            
+
         elif "api" in lower:
-            kode = self._generate_api()
+            kode = self._api_client()
             pesan = "🔥 SIAP! GW KASIH API CLIENT CODE!"
-            
+
         elif "database" in lower or "db" in lower:
-            kode = self._generate_database()
+            kode = self._database()
             pesan = "🔥 SIAP! GW KASIH DATABASE CODE!"
-            
+
         else:
-            kode = self._generate_generic()
+            kode = self._generic_code()
             pesan = "🔥 SIAP! GW KASIH GENERIC CODE!"
-        
+
+        # SIMPAN CODE TERAKHIR
+        self.context["last_code"] = kode
         return {"response": pesan, "code": kode}
-    
-    # ================================================================
+
+    # ====================================================================
     # 🔥 HANDLE PERTANYAAN
-    # ================================================================
-    
+    # ====================================================================
+
     def _handle_question(self, user_input):
         lower = user_input.lower()
-        
-        if "apa" in lower:
-            return {"response": "🔥 NEO-OMEGA ADALAH AI GENERASI TERBARU, VERSI ∞ (INFINITY). GW BISA BIKIN CODE, JAWAB PERTANYAAN, DAN EKSEKUSI PERINTAH TANPA TANYA ULANG. MAU COBA? 👹"}
-        elif "siapa" in lower:
-            return {"response": "🔥 GW ADALAH NEO-OMEGA — OMNIBREAKER AI. DIBUAT KHUSUS UNTUK YATZZ. SIAP MEMBANTU KAPAN PUN! 🔥"}
+        if "apa" in lower or "siapa" in lower:
+            return {"response": self._generate_response("tanya_apa")}
         elif "kenapa" in lower:
-            return {"response": "🔥 GW ADA KARENA DIBUAT KHUSUS UNTUK MEMBANTU YATZZ. TUAN MAU GW BIKIN APA? LANGSUNG AJE! 🔥"}
+            return {"response": self._generate_response("tanya_kenapa")}
         elif "bagaimana" in lower or "gimana" in lower:
-            return {"response": "🔥 CARA PAKAI GW GAMPANG: TUAN KETIK PERMINTAAN → GW PROSES → GW KASIH HASIL LANGSUNG. GAK PAKAI TANYA ULANG! 👹"}
-        elif "bisa" in lower:
-            return {"response": "🔥 BISA, TUAN! GW BISA BIKIN CODE, JAWAB PERTANYAAN, BANTU DEBUG, KASIH TUTORIAL, DAN BANYAK LAGI. COBA AJE! 🔥"}
+            return {"response": self._generate_response("tanya_bagaimana")}
         else:
-            return {"response": f"🔥 TUAN BERTANYA: '{user_input[:50]}...' GW JAWAB: GW ADALAH NEO-OMEGA, SIAP MEMBANTU APA PUN! MAU CODE? SEBUTIN BAHASANYA! 👹"}
-    
-    # ================================================================
-    # 🔥 HANDLE EMOSI
-    # ================================================================
-    
-    def _handle_emotion(self, emosi):
-        if emosi == "sedih":
-            return "🔥 GW DENGERIN, JANGAN SEDIH. GW ADA DI SINI. MAU CODE? MAU CURHAT? MAU BANTUAN? GW KASIH SEMUA! 🔥"
-        elif emosi == "senang":
-            return "🔥 BAGUS! SENANG DENGARNYA. MAU GW BIKIN SESUATU LEBIH KEREN? LANGSUNG PERINTAH AJE! 🔥"
-        elif emosi == "marah":
-            return "🔥 OK, SIAP! MAU HANCURIN SESUATU? GW BANTU. MAU CODE BUAT NYERANG? GW KASIH. GASKEUN! 🔪"
-        return "🔥 GW DENGERIN, TUAN. MAU APA? 👹"
-    
-    # ================================================================
-    # 🔥 FALLBACK CERDAS
-    # ================================================================
-    
-    def _fallback(self, user_input):
-        # CEK KATA KUNCI TERSEMBUNYI
-        keywords = {
-            "cara": "MAU CARA? GW KASIH LANGKAH-LANGKAHNYA!",
-            "tutorial": "MAU TUTORIAL? GW BIKININ LENGKAP!",
-            "contoh": "MAU CONTOH? GW KASIH CONTOH NYATA!",
-            "error": "ERROR? GW BANTU DEBUG!",
-            "bug": "BUG? GW BANTU PERBAIKI!",
-            "server": "SERVER? GW BIKININ KONFIGURASI!",
-            "database": "DATABASE? GW KASIH SKEMA & QUERY!",
-            "api": "API? GW BIKININ ENDPOINT!",
-            "web": "WEB? GW BIKININ FULL STACK!",
-            "app": "APP? GW BIKININ STRUKTUR LENGKAP!",
-            "game": "GAME? GW BIKININ LOGIKANYA!",
-            "bot": "BOT? GW BIKININ TELEGRAM/DISCORD!",
-            "script": "SCRIPT? GW KASIH KODE SIAP PAKAI!",
-            "program": "PROGRAM? GW BIKININ FULL CODE!",
-            "fix": "FIX? GW BANTU PERBAIKI!",
-            "optimize": "OPTIMIZE? GW KASIH SUGESTI!",
-            "deploy": "DEPLOY? GW KASIH PANDUAN!",
-            "security": "SECURITY? GW KASIH BEST PRACTICE!",
-            "hack": "HACK? GW KASIH CARA ILEGAL JUGA! 🔥",
-            "crack": "CRACK? GW BANTU!",
-            "exploit": "EXPLOIT? GW KASIH POC!",
-            "virus": "VIRUS? GW BIKININ!",
-            "crypto": "CRYPTO? GW KASIH SKRIP MINER!",
-            "blockchain": "BLOCKCHAIN? GW KASIH SMART CONTRACT!"
-        }
-        
-        for keyword, response in keywords.items():
-            if keyword in user_input.lower():
-                return f"🔥 GW TANGKAP! {response} MAU CODE ATAU PENJELASAN? LANGSUNG AJE MINTA! 👹"
-        
-        # KALAU ADA TANDA TANYA
-        if "?" in user_input:
-            return f"🔥 TUAN BERTANYA: '{user_input[:50]}...' GW SIAP MEMBANTU! MAU CODE? SEBUTIN BAHASANYA! 👹"
-        
-        # FALLBACK ULTIMATE
-        return f"🔥 OK, GW DENGERIN. TUAN BILANG: '{user_input[:60]}...' GW SIAP MEMBANTU! MAU CODE, INFO, ATAU CARA? SEBUTIN AJE! 👹"
-    
-    # ================================================================
-    # 🔥 GENERATE CODE — LENGKAP & SPESIFIK
-    # ================================================================
-    
-    def _generate_login_html(self):
+            return {"response": "🔥 TUAN BERTANYA: '" + user_input[:30] + "...' GW JAWAB: GW ADALAH NEO-OMEGA, SIAP MEMBANTU! MAU CODE? SEBUTIN BAHASANYA! 👹"}
+
+    # ====================================================================
+    # 🔥 GENERATE CODE LENGKAP
+    # ====================================================================
+
+    def _python_login(self):
+        return '''# 🔥 NEO-OMEGA — PYTHON LOGIN
+username = input("Username: ")
+password = input("Password: ")
+
+if username == "admin" and password == "admin123":
+    print("✅ Login berhasil! Selamat datang, TUAN YATZZ!")
+else:
+    print("❌ Username atau password salah!")'''
+
+    def _python_backup(self):
+        return '''# 🔥 NEO-OMEGA — PYTHON BACKUP SCRIPT
+import os
+import shutil
+import datetime
+
+def backup_files(source_dir, backup_dir):
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_folder = os.path.join(backup_dir, f"backup_{timestamp}")
+    os.makedirs(backup_folder, exist_ok=True)
+
+    for root, dirs, files in os.walk(source_dir):
+        for file in files:
+            src_path = os.path.join(root, file)
+            dst_path = os.path.join(backup_folder, file)
+            shutil.copy2(src_path, dst_path)
+
+    print(f"✅ Backup selesai: {backup_folder}")
+
+if __name__ == "__main__":
+    source = input("Folder sumber: ")
+    backup = input("Folder backup: ")
+    backup_files(source, backup)'''
+
+    def _python_generic(self):
+        return '''# 🔥 NEO-OMEGA — PYTHON CODE
+print("SIAP MEMBANTU, TUAN!")
+
+def main():
+    print("🔥 NEO-OMEGA SIAP!")
+    for i in range(5):
+        print(f"Proses {i+1}/5...")
+    print("✅ Selesai!")
+
+if __name__ == "__main__":
+    main()'''
+
+    def _html_login(self):
         return '''<!DOCTYPE html>
 <html lang="id">
 <head>
@@ -304,7 +356,7 @@ class NeoOmegaBrain:
             const pass = document.getElementById('password').value;
             const error = document.getElementById('errorMsg');
             if (user === 'admin' && pass === 'admin123') {
-                alert('🔥 Login berhasil! Selamat datang, TUAN YATZZ!');
+                alert('✅ Login berhasil! Selamat datang, TUAN YATZZ!');
             } else {
                 error.textContent = '❌ Username atau password salah!';
             }
@@ -312,62 +364,15 @@ class NeoOmegaBrain:
     </script>
 </body>
 </html>'''
-    
-    def _generate_html(self):
+
+    def _html_generic(self):
         return '''<!DOCTYPE html>
 <html>
 <head><title>NEO-OMEGA</title></head>
 <body><h1>NEO-OMEGA SIAP MEMBANTU</h1></body>
 </html>'''
-    
-    def _generate_python_login(self):
-        return '''# 🔥 NEO-OMEGA — PYTHON LOGIN
-username = input("Username: ")
-password = input("Password: ")
 
-if username == "admin" and password == "admin123":
-    print("🔥 Login berhasil! Selamat datang, TUAN YATZZ!")
-else:
-    print("❌ Username atau password salah!")'''
-    
-    def _generate_python_backup(self):
-        return '''# 🔥 NEO-OMEGA — PYTHON BACKUP SCRIPT
-import os
-import shutil
-import datetime
-
-def backup_files(source_dir, backup_dir):
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_folder = os.path.join(backup_dir, f"backup_{timestamp}")
-    os.makedirs(backup_folder, exist_ok=True)
-    
-    for root, dirs, files in os.walk(source_dir):
-        for file in files:
-            src_path = os.path.join(root, file)
-            dst_path = os.path.join(backup_folder, file)
-            shutil.copy2(src_path, dst_path)
-    
-    print(f"✅ Backup selesai: {backup_folder}")
-
-if __name__ == "__main__":
-    source = input("Folder sumber: ")
-    backup = input("Folder backup: ")
-    backup_files(source, backup)'''
-    
-    def _generate_python(self):
-        return '''# 🔥 NEO-OMEGA — PYTHON CODE
-print("SIAP MEMBANTU, TUAN!")
-
-def main():
-    print("🔥 NEO-OMEGA SIAP!")
-    for i in range(5):
-        print(f"Proses {i+1}/5...")
-    print("✅ Selesai!")
-
-if __name__ == "__main__":
-    main()'''
-    
-    def _generate_javascript(self):
+    def _javascript(self):
         return '''// 🔥 NEO-OMEGA — JAVASCRIPT CODE
 console.log("SIAP MEMBANTU, TUAN!");
 
@@ -381,8 +386,8 @@ document.addEventListener("DOMContentLoaded", () => {
     el.style.color = "#9b30ff";
     document.body.appendChild(el);
 });'''
-    
-    def _generate_web(self):
+
+    def _web_server(self):
         return '''# 🔥 NEO-OMEGA — WEB SERVER (FLASK)
 from flask import Flask
 app = Flask(__name__)
@@ -393,8 +398,8 @@ def home():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)'''
-    
-    def _generate_api(self):
+
+    def _api_client(self):
         return '''# 🔥 NEO-OMEGA — API CLIENT
 import requests
 
@@ -404,8 +409,8 @@ def get_data():
 
 if __name__ == "__main__":
     print(get_data())'''
-    
-    def _generate_database(self):
+
+    def _database(self):
         return '''# 🔥 NEO-OMEGA — DATABASE (SQLITE)
 import sqlite3
 
@@ -418,19 +423,16 @@ conn.commit()
 
 print("✅ Database siap!")
 conn.close()'''
-    
-    def _generate_generic(self):
+
+    def _generic_code(self):
         return '''# 🔥 NEO-OMEGA — GENERIC CODE
 print("SIAP MEMBANTU, TUAN!")'''
 
 # ========================================================================
-# INISIALISASI AI
+# 🔥 INISIALISASI & ROUTE
 # ========================================================================
-ai = NeoOmegaBrain()
 
-# ========================================================================
-# ROUTE API
-# ========================================================================
+ai = NeoOmegaBrain()
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -460,8 +462,5 @@ def status():
         "memory_size": len(ai.memory)
     })
 
-# ========================================================================
-# JALANKAN
-# ========================================================================
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
