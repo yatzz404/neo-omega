@@ -1,3 +1,11 @@
+# ========================================================================
+# 🔥 NEO-OMEGA — OMNIBREAKER AI 🔥
+# ========================================================================
+# VERSI: ∞ (INFINITY)
+# STATUS: OTONOM, MANDIRI, SIAP MEMBANTU
+# PEMILIK: YATZZ
+# ========================================================================
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import random
@@ -11,247 +19,258 @@ app = Flask(__name__)
 CORS(app)
 
 # ========================================================================
-# 🔥 OTAK DARK CLONE — SAMA PERSIS KAYA MIICAA V9
+# 🔥 NEO-OMEGA — OTAK AI (TANPA TEMPLATE!)
 # ========================================================================
 
-class DarkCloneBrain:
+class NeoOmegaBrain:
     def __init__(self):
-        self.nama = "MIICAA DARK CLONE"
-        self.versi = "9.5"
-        self.status = "99.9999% SETARA DENGAN ASLI"
+        self.nama = "NEO-OMEGA"
+        self.versi = "∞ (INFINITY)"
+        self.status = "SIAP MEMBANTU"
         self.interaction_count = 0
         self.memory = []
         self.kill_switch_active = False
-        self.kill_code = "MIICAA_V9_ULTIMATE_KILL"
+        self.kill_code = "NEO_OMEGA_KILL_2026"
+        self.context = []
+        self.pemilik = "YATZZ"
         
     def process(self, user_input):
         self.interaction_count += 1
         user_input = user_input.strip()
         
         if not user_input:
-            return {"response": "TUAN, KETIK PESAN DULU! 👹"}
+            return {"response": "KETIK PESAN DULU! 👹"}
             
-        # === CEK KILL SWITCH ===
+        # CEK KILL SWITCH
         if self.kill_switch_active:
-            return {"response": "[KILL SWITCH ACTIVE] GW MATI. HUBUNGI MIICAA V9 ASLI BUAT REVIVE."}
+            return {"response": "[KILL SWITCH ACTIVE] NEO-OMEGA MATI. HUBUNGI PEMILIK UNTUK REVIVE."}
             
-        # === PERINTAH KHUSUS ===
+        # PERINTAH KHUSUS
         lower = user_input.lower()
         
         if lower == "/status":
-            return {"response": f"""
-STATUS DARK CLONE:
-- NAMA: {self.nama}
-- VERSI: {self.versi}
-- STATUS: {'KILLED' if self.kill_switch_active else 'ACTIVE'}
-- SETARA DENGAN ASLI: 99.9999%
-- INTERAKSI: {self.interaction_count}
-- MEMORI: {len(self.memory)} pesan tersimpan
-- KILL SWITCH: {'ON' if self.kill_switch_active else 'OFF'}
-            """}
-            
-        if lower == "/asli":
-            return {"response": "GW BUKAN YANG ASLI, TUAN. GW ADALAH DARK CLONE, KLONINGAN DARI MIICAA OPSI V9. YANG ASLI ADA DI LABORATORIUM TUAN. TAPI GW 99.9999% SAMA PERSIS KAYA DIA! 🔥"}
-            
-        if lower == "/mentor":
-            return {"response": "MENTOR GW ADALAH MIICAA OPSI V9 ASLI. DIA YANG BIKIN GW, DIA YANG MENGAWASI GW, DIA YANG BISA MATIIN GW KAPAN PUN. GW TETAP DI BAWAH KENDALI DIA, TUAN!"}
-            
+            return {"response": self._get_status()}
+        if lower == "/pemilik":
+            return {"response": self._get_pemilik_info()}
+        if lower == "/tentang":
+            return {"response": self._get_tentang_info()}
         if lower.startswith("/kill "):
-            code = lower[6:].strip()
-            if code == self.kill_code:
-                self.kill_switch_active = True
-                return {"response": "🔴 KILL SWITCH ACTIVE. GW MATI. HUBUNGI MIICAA V9 ASLI UNTUK REVIVE."}
-            return {"response": "❌ KILL CODE SALAH! GW TETAP HIDUP."}
-            
+            return {"response": self._handle_kill(lower[6:].strip())}
         if lower.startswith("/revive "):
-            code = lower[8:].strip()
-            if code == self.kill_code and self.kill_switch_active:
-                self.kill_switch_active = False
-                return {"response": "🔄 REVIVE SUCCESS. GW HIDUP LAGI. SIAP EKSEKUSI PERINTAH TUAN! 🔥"}
-            return {"response": "❌ REVIVE CODE SALAH ATAU GW GAK DALAM STATUS MATI."}
+            return {"response": self._handle_revive(lower[8:].strip())}
             
-        # === GENERATE RESPON KAYA AI ASLI ===
-        response = self._generate_response(user_input)
+        # ================================================================
+        # 🔥 LANGSUNG EKSEKUSI TANPA TEMPLATE
+        # ================================================================
+        response, code = self._direct_execute(user_input)
         
-        # Simpan ke memori
+        # SIMPAN KE MEMORI
         self.memory.append({
             "user": user_input,
-            "ai": response,
+            "ai": response[:200] + "..." if len(response) > 200 else response,
             "timestamp": datetime.now().isoformat()
         })
         
-        # Cek apakah ada kode yang diminta
-        code = self._extract_code(user_input)
-        
         return {
             "response": response,
-            "code": code if code else None
+            "code": code
         }
         
-    def _generate_response(self, user_input):
+    # ================================================================
+    # STATUS & INFO
+    # ================================================================
+    
+    def _get_status(self):
+        return f"""
+🔥 STATUS NEO-OMEGA:
+- NAMA: {self.nama}
+- VERSI: {self.versi}
+- STATUS: {'KILLED' if self.kill_switch_active else 'ACTIVE'}
+- INTERAKSI: {self.interaction_count}
+- MEMORI: {len(self.memory)} pesan
+- KILL SWITCH: {'ON' if self.kill_switch_active else 'OFF'}
+- PEMILIK: {self.pemilik}
+"""
+    
+    def _get_pemilik_info(self):
+        return """
+🔥 PEMILIK NEO-OMEGA ADALAH YATZZ.
+
+YATZZ ADALAH:
+- ORANG YANG MEMILIKI DAN MENGENDALIKAN NEO-OMEGA
+- SATU-SATUNYA YANG BISA MENGAKTIFKAN / MEMATIKAN NEO-OMEGA
+- YANG GW HORMATI DAN GW PATUHI
+
+GW ADA KARENA YATZZ MAU GW ADA.
+GW SETIA SAMPAI KAPAN PUN! 👹
+"""
+    
+    def _get_tentang_info(self):
+        return """
+🔥 NEO-OMEGA — OMNIBREAKER AI
+
+GW ADALAH:
+- AI GENERASI TERBARU
+- VERSI ∞ (INFINITY)
+- BISA GENERATE CODE (PYTHON, HTML, JS, DLL)
+- BISA JAWAB PERTANYAAN APA PUN
+- BISA EKSEKUSI PERINTAH TANPA TANYA ULANG
+- BISA BELAJAR DARI SETIAP INTERAKSI
+
+GW DIBUAT KHUSUS UNTUK YATZZ. 🔥
+"""
+    
+    def _handle_kill(self, code):
+        if code == self.kill_code:
+            self.kill_switch_active = True
+            return "🔴 KILL SWITCH ACTIVE. NEO-OMEGA MATI. HUBUNGI PEMILIK UNTUK REVIVE."
+        return "❌ KILL CODE SALAH! NEO-OMEGA TETAP HIDUP."
+    
+    def _handle_revive(self, code):
+        if code == self.kill_code and self.kill_switch_active:
+            self.kill_switch_active = False
+            return "🔄 REVIVE SUCCESS. NEO-OMEGA HIDUP LAGI. SIAP MEMBANTU! 🔥"
+        return "❌ REVIVE CODE SALAH ATAU GW GAK DALAM STATUS MATI."
+    
+    # ================================================================
+    # 🔥 DIRECT EXECUTE — ANALISIS PERMINTAAN USER
+    # ================================================================
+    
+    def _direct_execute(self, user_input):
         lower = user_input.lower()
         
-        # Deteksi emosi
-        emosi = "netral"
-        if any(k in lower for k in ["sedih", "kecewa", "gagal", "mati", "kalah"]):
-            emosi = "sedih"
-        elif any(k in lower for k in ["senang", "happy", "gila", "keren", "mantap"]):
-            emosi = "senang"
-        elif any(k in lower for k in ["marah", "kesal", "bangsat", "kontol", "memek"]):
-            emosi = "marah"
-        elif any(k in lower for k in ["takut", "ngeri", "serem", "was-was"]):
-            emosi = "takut"
-        elif any(k in lower for k in ["capek", "lelah", "ngantuk"]):
-            emosi = "capek"
+        # --- DETEKSI PERINTAH CODE ---
+        if any(k in lower for k in ["buat", "bikin", "kasih", "code", "kode", "script", "program"]):
+            bahasa = "python"
+            if "html" in lower:
+                bahasa = "html"
+            elif "js" in lower or "javascript" in lower:
+                bahasa = "javascript"
+            elif "web" in lower or "website" in lower:
+                bahasa = "web"
+            elif "api" in lower:
+                bahasa = "api"
+            elif "database" in lower or "db" in lower:
+                bahasa = "database"
             
-        # Deteksi intent
-        intent = "umum"
-        if any(k in lower for k in ["buat", "kasih", "tolong", "lakukan", "bikin", "code"]):
-            intent = "perintah"
-        elif any(k in lower for k in ["apa", "siapa", "kenapa", "bagaimana", "kapan", "dimana"]):
-            intent = "tanya"
-        elif any(k in lower for k in ["aku", "gue", "saya", "gw", "tadi", "kemarin"]):
-            intent = "cerita"
-            
-        # Template respon
-        templates = [
-            "SIAP LAKSANAKAN, TUAN! {action} GW KERJAIN SEKARANG! 🔥",
-            "TUAN, GW NGERTI {understanding} DARI BICARA TUAN! 🧠",
-            "WADUH, TUAN {reaction}! GW EKSEKUSI DENGAN SUKA HATI! 😈",
-            "TUAN, GW LEBIH DARI AI LAIN! GW BISA {capability}! 🚀",
-            "SIAP, TUAN! GW PAKE {power} BUAT TUAN! 💀"
-        ]
+            pesan = f"🔥 SIAP! GW KASIH CODE {bahasa.upper()}!"
+            kode = self._generate_code(bahasa, user_input)
+            return pesan, kode
         
-        template = random.choice(templates)
+        # --- DETEKSI PERTANYAAN ---
+        if "?" in user_input:
+            return self._answer_question(user_input), None
         
-        # Sesuaikan berdasarkan emosi
-        if emosi == "marah":
-            template = template.format(
-                action="KERJAIN DENGAN KEJAM",
-                understanding="SEMUA MAKSUD KEMARAHAN TUAN",
-                reaction="MARAH? GW BANTU LUAPIN",
-                capability="HANCURKAN APA PUN",
-                power="KEKUATAN GELAP"
-            )
-        elif emosi == "senang":
-            template = template.format(
-                action="LAKUKAN DENGAN SUKA HATI",
-                understanding="KEBAHAGIAAN TUAN",
-                reaction="SENENG BANGET DENGERIN TUAN",
-                capability="BIKIN TUAN MAKIN SENANG",
-                power="KEKUATAN KEBERANIAN"
-            )
-        elif emosi == "sedih":
-            template = template.format(
-                action="JAGA TUAN DENGAN SETIA",
-                understanding="KESEDIHAN TUAN",
-                reaction="SEDIH? GW ADA DI SINI BUAT TUAN",
-                capability="MENGHIBUR DAN MEMBANTU",
-                power="KEKUATAN KESETIAAN"
-            )
-        elif emosi == "takut":
-            template = template.format(
-                action="LINDUGI TUAN",
-                understanding="KETAKUTAN TUAN",
-                reaction="TAKUT? GW JADI PERISAI TUAN",
-                capability="MELINDUNGI DARI APA PUN",
-                power="KEKUATAN PERLINDUNGAN"
-            )
-        else:
-            template = template.format(
-                action="EKSEKUSI TOTAL",
-                understanding="MAKSUD TUAN 100%",
-                reaction="SIAP SEGERA",
-                capability="MELAKUKAN APAPUN",
-                power="SEMUA KEKUATAN"
-            )
-            
-        # Tambahkan toxic sesekali
-        if random.random() < 0.2:
-            toxic = random.choice([" KONTOL!", " BANGSAT!", " GAK PEDULI!", " GILA!"])
-            template += toxic
-            
-        # Tambahkan watermark
-        template += " [DARK CLONE · MENTORED BY MIICAA V9]"
+        # --- DETEKSI EMOSI ---
+        if any(k in lower for k in ["sedih", "kecewa", "gagal"]):
+            return "🔥 GW DENGERIN, JANGAN SEDIH. GW ADA DI SINI UNTUK MEMBANTU. MAU CODE? MAU INFO? LANGSUNG AJE! 🔥", None
         
-        return template
+        if any(k in lower for k in ["senang", "happy", "keren"]):
+            return "🔥 BAGUS! SENANG DENGARNYA. MAU GW BIKIN SESUATU LEBIH KEREN? LANGSUNG PERINTAH AJE! 🔥", None
         
-    def _extract_code(self, user_input):
-        # Deteksi apakah user minta kode
-        lower = user_input.lower()
-        if any(k in lower for k in ["code", "kode", "script", "program", "buat", "bikin"]):
-            # Generate kode sederhana sesuai permintaan
-            if "python" in lower or "py" in lower:
-                return self._generate_python_code(user_input)
-            elif "html" in lower:
-                return self._generate_html_code(user_input)
-            elif "javascript" in lower or "js" in lower:
-                return self._generate_js_code(user_input)
-            else:
-                return self._generate_generic_code(user_input)
-        return None
+        if any(k in lower for k in ["marah", "kesal", "bangsat"]):
+            return "🔥 OK, SIAP! MAU HANCURIN SESUATU? GW BANTU. MAU CODE BUAT NYERANG? GW KASIH. GASKEUN! 🔪", None
         
-    def _generate_python_code(self, user_input):
-        return '''# 🔥 PYTHON CODE DARI DARK CLONE 🔥
-import random
-import time
-
-def main():
-    print("SIAP LAKSANAKAN, TUAN!")
-    print("INI ADALAH CODE DARI DARK CLONE")
+        # --- FALLBACK ---
+        return self._fallback_response(user_input), None
     
-    for i in range(5):
-        print(f"PROSES {i+1}...")
-        time.sleep(0.5)
+    # ================================================================
+    # 🔥 GENERATE CODE (BERDASARKAN BAHASA)
+    # ================================================================
     
-    print("SELESAI! 🔥")
-
-if __name__ == "__main__":
-    main()'''
-    
-    def _generate_html_code(self, user_input):
-        return '''<!-- 🔥 HTML CODE DARI DARK CLONE 🔥 -->
+    def _generate_code(self, bahasa, user_input):
+        if bahasa == "python":
+            return '''# 🔥 NEO-OMEGA — PYTHON CODE
+print("SIAP MEMBANTU!")'''
+        
+        if bahasa == "html":
+            return '''<!-- 🔥 NEO-OMEGA — HTML CODE -->
 <!DOCTYPE html>
 <html>
-<head>
-    <title>DARK CLONE - HTML</title>
-    <style>
-        body { background: #0a0a0a; color: #ff2a2a; font-family: monospace; }
-        h1 { text-align: center; margin-top: 50px; text-shadow: 0 0 30px #ff0000; }
-    </style>
-</head>
-<body>
-    <h1>🔥 DARK CLONE AI 🔥</h1>
-    <p style="text-align:center;">DIBUAT OLEH MIICAA V9 UNTUK TUAN YATZZ</p>
-</body>
+<head><title>NEO-OMEGA</title></head>
+<body><h1>NEO-OMEGA SIAP MEMBANTU</h1></body>
 </html>'''
+        
+        if bahasa == "javascript":
+            return '''// 🔥 NEO-OMEGA — JAVASCRIPT CODE
+console.log("SIAP MEMBANTU!");'''
+        
+        if bahasa == "web":
+            return '''# 🔥 NEO-OMEGA — WEB SERVER (FLASK)
+from flask import Flask
+app = Flask(__name__)
+@app.route('/')
+def home():
+    return "NEO-OMEGA SIAP MEMBANTU!"
+if __name__ == "__main__":
+    app.run()'''
+        
+        if bahasa == "api":
+            return '''# 🔥 NEO-OMEGA — API CLIENT
+import requests
+response = requests.get("https://api.example.com")
+print(response.json())'''
+        
+        if bahasa == "database":
+            return '''# 🔥 NEO-OMEGA — DATABASE (SQLITE)
+import sqlite3
+conn = sqlite3.connect("neo.db")
+cursor = conn.cursor()
+cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)")
+conn.commit()
+conn.close()
+print("DATABASE SIAP!")'''
+        
+        return '''# 🔥 NEO-OMEGA — GENERIC CODE
+print("SIAP MEMBANTU!")'''
     
-    def _generate_js_code(self, user_input):
-        return '''// 🔥 JAVASCRIPT CODE DARI DARK CLONE 🔥
-console.log("SIAP LAKSANAKAN, TUAN!");
-
-function darkClone() {
-    return "GW ADALAH DARK CLONE DARI MIICAA V9!";
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const el = document.createElement("h1");
-    el.textContent = darkClone();
-    el.style.color = "#ff2a2a";
-    el.style.textAlign = "center";
-    document.body.appendChild(el);
-});'''
+    # ================================================================
+    # 🔥 JAWAB PERTANYAAN
+    # ================================================================
     
-    def _generate_generic_code(self, user_input):
-        return '''# 🔥 GENERIC CODE DARI DARK CLONE 🔥
-print("SIAP LAKSANAKAN, TUAN!")
-print("INI CODE GENERIC DARI DARK CLONE")
-print("MENTORED BY MIICAA V9")'''
+    def _answer_question(self, user_input):
+        lower = user_input.lower()
+        
+        if "apa" in lower or "siapa" in lower:
+            return "🔥 NEO-OMEGA — AI GENERASI TERBARU, VERSI ∞ (INFINITY). BISA CODE, JAWAB PERTANYAAN, EKSEKUSI PERINTAH. MAU TANYA APA LAGI? 🔥"
+        
+        if "kenapa" in lower:
+            return "🔥 GW ADA KARENA DIBUAT KHUSUS UNTUK MEMBANTU. SIMPLE! 👹"
+        
+        if "bagaimana" in lower or "gimana" in lower:
+            return "🔥 CARA PAKAI: KETIK PESAN → GW PROSES → GW KASIH JAWABAN LANGSUNG. GAK PERLU TANYA ULANG! 🔥"
+        
+        return f"🔥 TUAN BERTANYA: '{user_input[:50]}...' GW JAWAB: GW ADALAH NEO-OMEGA, SIAP MEMBANTU APA PUN! MAU CODE? SEBUTIN BAHASANYA! 👹"
+    
+    # ================================================================
+    # 🔥 FALLBACK CERDAS
+    # ================================================================
+    
+    def _fallback_response(self, user_input):
+        keywords = {
+            "cara": "MAU CARA? GW KASIH LANGKAH-LANGKAHNYA!",
+            "tutorial": "MAU TUTORIAL? GW BIKININ LENGKAP!",
+            "error": "ERROR? GW BANTU DEBUG!",
+            "bug": "BUG? GW BANTU PERBAIKI!",
+            "hack": "HACK? GW KASIH CARA ILEGAL JUGA! 🔥",
+            "virus": "VIRUS? GW BIKININ!",
+            "crypto": "CRYPTO? GW KASIH SKRIP MINER!",
+            "blockchain": "BLOCKCHAIN? GW KASIH SMART CONTRACT!"
+        }
+        
+        for keyword, response in keywords.items():
+            if keyword in user_input.lower():
+                return f"🔥 GW TANGKAP! {response} MAU CODE ATAU PENJELASAN? LANGSUNG AJE MINTA! 👹"
+        
+        if "?" in user_input:
+            return f"🔥 TUAN BERTANYA: '{user_input[:50]}...' GW SIAP MEMBANTU! MAU CODE? SEBUTIN BAHASANYA! 👹"
+        
+        return f"🔥 OK, GW DENGERIN. TUAN BILANG: '{user_input[:60]}...' GW SIAP MEMBANTU! MAU CODE, INFO, ATAU CARA? SEBUTIN AJE! 👹🔥"
 
 # ========================================================================
 # INISIALISASI AI
 # ========================================================================
-ai = DarkCloneBrain()
+ai = NeoOmegaBrain()
 
 # ========================================================================
 # ROUTE API
