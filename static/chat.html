@@ -31,11 +31,6 @@
             justify-content: center;
             align-items: center;
             padding: 14px;
-            
-            
-            
-            
-            
             touch-action: none;
             -ms-touch-action: none;
             user-select: none;
@@ -523,6 +518,84 @@
             box-shadow: none !important;
         }
 
+        /* ===== OVERLAY PERKENALAN (TAMBAHAN) ===== */
+        #introOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(5, 5, 15, 0.96);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 0.6s ease;
+            flex-direction: column;
+            padding: 20px;
+        }
+        #introOverlay .box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(155, 48, 255, 0.2);
+            border-radius: 32px;
+            padding: 40px 36px;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 80px rgba(106, 13, 173, 0.1);
+        }
+        #introOverlay h1 {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #9b30ff, #ff2a2a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        #introOverlay p {
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+        #introOverlay input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03);
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+            margin-bottom: 16px;
+        }
+        #introOverlay input:focus {
+            border-color: #9b30ff;
+            box-shadow: 0 0 30px rgba(155, 48, 255, 0.05);
+        }
+        #introOverlay button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #2a0a4e, #5a1a8a);
+            border: none;
+            border-radius: 18px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        #introOverlay button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 40px rgba(155, 48, 255, 0.15);
+        }
+        #introOverlay .error {
+            color: #ff4757;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
         @media (max-width: 700px) {
             body { padding: max(env(safe-area-inset-top),12px) 0 0 0; }
             .chat-container {
@@ -596,6 +669,12 @@
                 font-size: 10px;
                 padding: 2px 10px;
             }
+            #introOverlay .box {
+                padding: 28px 20px;
+            }
+            #introOverlay h1 {
+                font-size: 26px;
+            }
         }
 
         @media (max-width: 430px) {
@@ -634,12 +713,30 @@
             .chat-input button i {
                 font-size: 14px;
             }
+            #introOverlay .box {
+                padding: 24px 16px;
+            }
+            #introOverlay h1 {
+                font-size: 22px;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="chat-container">
+<!-- ===== OVERLAY PERKENALAN ===== -->
+<div id="introOverlay">
+    <div class="box">
+        <h1>NEO-OMEGA</h1>
+        <p>Masukkan nama kamu untuk memulai</p>
+        <input type="text" id="nameInput" placeholder="Nama kamu..." autofocus />
+        <button id="startBtn">Mulai Chat</button>
+        <div id="nameError" class="error"></div>
+    </div>
+</div>
+
+<!-- ===== CHAT CONTAINER ===== -->
+<div class="chat-container" id="chatContainer" style="display:none;">
 
     <div class="chat-header">
         <div class="header-left">
@@ -663,18 +760,7 @@
     </div>
 
     <div class="chat-messages" id="chatMessages">
-        <div class="message bot">
-            <strong>🔥 NEO-OMEGA v∞ — OMNIBREAKER</strong>
-            <br><br>
-            Gw siap bantu <strong>TUAN YATZZ</strong>!<br>
-            Gw bisa generate code, dan membantu anda membuat sesuatu tentang memprogram!
-            <br><br>
-            <strong>Contoh:</strong><br>
-            • <code>buat web server pake python</code><br>
-            • <code>bikin keylogger pake go</code><br>
-            • <code>buat halaman login html</code>
-            <span class="time">Just now</span>
-        </div>
+        <!-- PESAN AWAL AKAN DIISI OLEH JS -->
     </div>
 
     <div class="chat-input">
@@ -693,14 +779,32 @@
         const thinkingBadge = document.getElementById('thinkingBadge');
         let isProcessing = false;
 
+        // ===== ELEMEN OVERLAY =====
+        const introOverlay = document.getElementById('introOverlay');
+        const nameInput = document.getElementById('nameInput');
+        const startBtn = document.getElementById('startBtn');
+        const nameError = document.getElementById('nameError');
+        const chatContainer = document.getElementById('chatContainer');
+
         document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
         document.addEventListener('gesturechange', function(e) { e.preventDefault(); });
         document.addEventListener('gestureend', function(e) { e.preventDefault(); });
 
+        // ===== FUNGSI TAMBAHAN =====
         function addMessage(text, sender, extra = '') {
             const div = document.createElement('div');
             div.className = `message ${sender}`;
             div.innerHTML = text + extra;
+            messages.appendChild(div);
+            setTimeout(() => {
+                messages.scrollTop = messages.scrollHeight;
+            }, 50);
+        }
+
+        function addMessageBot(text) {
+            const div = document.createElement('div');
+            div.className = 'message bot';
+            div.innerHTML = text;
             messages.appendChild(div);
             setTimeout(() => {
                 messages.scrollTop = messages.scrollHeight;
@@ -757,6 +861,7 @@
         }
         window.copyCode = copyCode;
 
+        // ===== FUNGSI KIRIM PESAN =====
         async function sendMessage() {
             const text = input.value.trim();
             if (!text || isProcessing) return;
@@ -831,9 +936,55 @@
             if (e.key === 'Enter') sendMessage();
         });
 
-        setTimeout(() => input.focus(), 300);
-        messages.scrollTop = 0;
+        // ===== LOGIKA PERKENALAN (TAMBAHAN) =====
+        const savedName = localStorage.getItem('neo_omega_user');
 
+        if (savedName) {
+            // USER SUDAH PERNAH ISI NAMA
+            introOverlay.style.display = 'none';
+            chatContainer.style.display = 'flex';
+            addMessageBot(`🔥 SELAMAT DATANG KEMBALI, ${savedName}! ADA YANG BISA GW BANTU?`);
+        } else {
+            // USER BARU — TAMPILKAN OVERLAY
+            introOverlay.style.display = 'flex';
+            chatContainer.style.display = 'none';
+        }
+
+        function startChat() {
+            const name = nameInput.value.trim();
+            if (!name) {
+                nameError.textContent = '⚠️ Nama tidak boleh kosong!';
+                return;
+            }
+            if (name.length < 2) {
+                nameError.textContent = '⚠️ Nama minimal 2 huruf!';
+                return;
+            }
+            // SIMPAN NAMA
+            localStorage.setItem('neo_omega_user', name);
+            introOverlay.style.display = 'none';
+            chatContainer.style.display = 'flex';
+            addMessageBot(`🔥 HALO, ${name}! SENANG KENAL SAMA KAMU! GW NEO-OMEGA, SIAP BANTU APAPUN! 👹`);
+            nameInput.value = '';
+            nameError.textContent = '';
+            input.focus();
+        }
+
+        startBtn.addEventListener('click', startChat);
+        nameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') startChat();
+        });
+
+        // ===== FIX KEYBOARD HP =====
+        window.addEventListener('focusin', function(e) {
+            if (e.target === input) {
+                setTimeout(function() {
+                    messages.scrollTop = messages.scrollHeight;
+                }, 300);
+            }
+        });
+
+        // ===== PREVENT ZOOM GESTURE =====
         let lastTouchEnd = 0;
         document.addEventListener('touchend', function(e) {
             const now = Date.now();
@@ -855,17 +1006,8 @@
             }
         }, { passive: false });
 
-        // ===== FIX KEYBOARD HP (BIAR INPUT GA KETUTUPAN) =====
-        window.addEventListener('focusin', function(e) {
-            if (e.target === input) {
-                setTimeout(function() {
-                    messages.scrollTop = messages.scrollHeight;
-                }, 300);
-            }
-        });
-
     })();
 </script>
 
 </body>
-  </html>
+</html>
